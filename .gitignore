@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.pt
+
+# İndirilen / üretilen büyük veriler (model/make_test_vectors.py ile yeniden üretilir)
+data/
+
+# Vivado ve Vitis HLS çıktıları
+*.jou
+*.log
+*.str
+*.dcp
+*.pb
+*.wdb
+.Xil/
+xsim.dir/
+*.cache/
+*.runs/
+*.sim/
+*.hw/
+*.ip_user_files/
+*.gen/
+
+# Vitis HLS projeleri: sadece proje (hls.app) ve solution ayarları (.aps, .directive) depoda
+hls/mnist_w*/*/dsp/*
+hls/mnist_w*/*/lut/*
+!hls/mnist_w*/*/dsp/*.aps
+!hls/mnist_w*/*/dsp/*.directive
+!hls/mnist_w*/*/lut/*.aps
+!hls/mnist_w*/*/lut/*.directive
+
+# Komut satırı scriptlerinin çalışma klasörü
+build/
