@@ -1,17 +1,4 @@
 <AutoPilot:solution xmlns:AutoPilot="com.autoesl.autopilot.solution">
-    <name>
-        <value string="dsp"/>
-    </name>
-    <project>
-        <value string="naive"/>
-    </project>
-    <flowTarget value="vivado"/>
-    <targetInfo>
-        <TargetInfo value="xc7a35t:-cpg236:-1"/>
-    </targetInfo>
-    <libraryList>
-        <library value="xilinx/artix7/artix7" name="DefaultPlatform"/>
-    </libraryList>
     <clockList>
         <clock name="default" period="10" default="false"/>
     </clockList>
@@ -20,5 +7,18 @@
         <config_op positional0="mul" impl="dsp"/>
         <config_rtl reset="all"/>
     </config>
+    <targetInfo>
+        <TargetInfo value="xc7a35t:-cpg236:-1"/>
+    </targetInfo>
+    <libraryList>
+        <library value="xilinx/artix7/artix7" name="DefaultPlatform"/>
+    </libraryList>
+    <flowTarget value="vivado"/>
+    <name>
+        <value string="dsp"/>
+    </name>
+    <project>
+        <value string="naive"/>
+    </project>
 </AutoPilot:solution>
 

@@ -28,6 +28,12 @@ aritmetiği kullanılmaz.
   ulaşır; buna karşılık yaklaşık 2–3 kat LUT ve 5–9 kat FF kullanır.
 - **Pragmaların etkisi:** Aynı C++ koduna eklenen birkaç pragma gecikmeyi 47 kat azaltır
   (212.737 → 4.473 çevrim).
+- **Enerji:** görüntü başına dinamik enerji en düşük 0,39 µJ (RTL, P=8, 2 bit, LUT'lu çarpıcı), en yüksek
+  44,7 µJ (HLS `naive`, 8 bit). Aynı gecikmedeki tasarımlarda HLS, RTL'in P=8 karşılığının 1,8–2,5 katı,
+  P=1 karşılığının 3,8–4,6 katı dinamik enerji harcar (DSP'li çarpıcılar).
+- **Maksimum frekans:** tahmini Fmax 136–250 MHz aralığındadır. P=1 / `pipe` düzeninde RTL ve HLS aynı
+  frekansa (~186 MHz) çıkar; P=8 / `par8` düzeninde HLS (198–218 MHz) RTL'den (149–152 MHz) daha yüksektir.
+- **Kod boyutu (8 bit, boş satır ve yorum hariç):** RTL kaynakları 381 satır, HLS kaynakları 89 satır.
 - Bütün yapılandırmalar 100 MHz zamanlama hedefini karşılar.
 
 ### RTL ve HLS (8 bit ağırlık, DSP'li çarpıcılar)
@@ -39,6 +45,72 @@ aritmetiği kullanılmaz.
 | RTL, P = 8 | 4.326 | 481 | 236 | 8,5 | 9 |
 | HLS `par8` | 4.473 | 903 | 1.144 | 9 | 9 |
 | HLS `naive` | 212.737 | 190 | 259 | 9 | 3 |
+
+## Grafikler
+
+| | |
+|---|---|
+| ![Doğruluk](results/figures/dogruluk.png) | ![Gecikme ve LUT](results/figures/gecikme_lut.png) |
+
+![RTL ve HLS kaynak kullanımı ve gecikme](results/figures/rtl_hls_kaynak.png)
+
+![Görüntü başına dinamik enerji](results/figures/enerji.png)
+
+![Tahmini en yüksek frekans](results/figures/fmax.png)
+
+## Enerji ve maksimum frekans
+
+Bütün 30 yapılandırma, 100 MHz'de. Güç değerleri Vivado'nun implementasyon sonrası güç raporundandır
+(vektörsüz tahmin, bkz. Sınırlamalar). Enerji = güç × (çevrim / 100 MHz); "dinamik" sütunu statik güç
+payını dışarıda bırakır. Fmax, aynı tasarımın 4 ns (250 MHz) saat kısıtıyla yeniden implemente edilip
+`1 / (4 ns − WNS)` hesaplanmasıyla bulunan bir tahmindir.
+
+| Uygulama | Bit | Varyant | Çarpıcı | Çevrim | Gecikme (µs) | Dinamik güç (mW) | Dinamik enerji (µJ) | Toplam enerji (µJ) | Fmax (MHz) |
+|---|---|---|---|---|---|---|---|---|---|
+| RTL | 8 | P=1 | DSP | 26.362 | 263,6 | 8 | 2,11 | 20,30 | 186 |
+| RTL | 8 | P=1 | LUT | 26.362 | 263,6 | 9 | 2,37 | 20,30 | 136 |
+| RTL | 8 | P=8 | DSP | 4.326 | 43,3 | 22 | 0,95 | 3,94 | 149 |
+| RTL | 8 | P=8 | LUT | 4.326 | 43,3 | 17 | 0,73 | 3,72 | 137 |
+| RTL | 4 | P=1 | DSP | 26.362 | 263,6 | 8 | 2,11 | 20,04 | 186 |
+| RTL | 4 | P=1 | LUT | 26.362 | 263,6 | 6 | 1,58 | 19,51 | 150 |
+| RTL | 4 | P=8 | DSP | 4.326 | 43,3 | 21 | 0,91 | 3,85 | 151 |
+| RTL | 4 | P=8 | LUT | 4.326 | 43,3 | 10 | 0,43 | 3,42 | 144 |
+| RTL | 2 | P=1 | DSP | 26.362 | 263,6 | 7 | 1,84 | 19,77 | 187 |
+| RTL | 2 | P=1 | LUT | 26.362 | 263,6 | 3 | 0,79 | 18,98 | 197 |
+| RTL | 2 | P=8 | DSP | 4.326 | 43,3 | 18 | 0,78 | 3,76 | 152 |
+| RTL | 2 | P=8 | LUT | 4.326 | 43,3 | 9 | 0,39 | 3,37 | 150 |
+| HLS | 8 | naive | DSP | 212.737 | 2.127,4 | 21 | 44,67 | 191,46 | 164 |
+| HLS | 8 | naive | LUT | 162.241 | 1.622,4 | 24 | 38,94 | 150,88 | 184 |
+| HLS | 8 | pipe | DSP | 26.437 | 264,4 | 37 | 9,78 | 28,02 | 186 |
+| HLS | 8 | pipe | LUT | 26.428 | 264,3 | 39 | 10,31 | 28,28 | 170 |
+| HLS | 8 | par8 | DSP | 4.473 | 44,7 | 47 | 2,10 | 5,19 | 218 |
+| HLS | 8 | par8 | LUT | 4.468 | 44,7 | 52 | 2,32 | 5,41 | 170 |
+| HLS | 4 | naive | DSP | 212.737 | 2.127,4 | 15 | 31,91 | 178,70 | 249 |
+| HLS | 4 | naive | LUT | 162.241 | 1.622,4 | 15 | 24,34 | 134,66 | 218 |
+| HLS | 4 | pipe | DSP | 26.405 | 264,1 | 30 | 7,92 | 26,14 | 180 |
+| HLS | 4 | pipe | LUT | 26.396 | 264,0 | 28 | 7,39 | 25,60 | 165 |
+| HLS | 4 | par8 | DSP | 4.441 | 44,4 | 37 | 1,64 | 4,71 | 197 |
+| HLS | 4 | par8 | LUT | 4.436 | 44,4 | 34 | 1,51 | 4,57 | 167 |
+| HLS | 2 | naive | DSP | 212.737 | 2.127,4 | 12 | 25,53 | 170,19 | 165 |
+| HLS | 2 | naive | LUT | 162.241 | 1.622,4 | 10 | 16,22 | 128,17 | 238 |
+| HLS | 2 | pipe | DSP | 26.404 | 264,0 | 32 | 8,45 | 26,40 | 187 |
+| HLS | 2 | pipe | LUT | 26.395 | 263,9 | 30 | 7,92 | 25,87 | 185 |
+| HLS | 2 | par8 | DSP | 4.440 | 44,4 | 43 | 1,91 | 4,93 | 198 |
+| HLS | 2 | par8 | LUT | 4.435 | 44,4 | 34 | 1,51 | 4,57 | 174 |
+
+Ham veri: [`results/energy.csv`](results/energy.csv), [`results/fmax.csv`](results/fmax.csv).
+
+## Kod boyutu
+
+8 bit tasarım, boş satırlar ve yorumlar hariç:
+
+| | Kaynak | Testbench |
+|---|---|---|
+| RTL (VHDL) | 381 satır | 331 satır |
+| HLS (C++) | 89 satır | 70 satır |
+
+HLS kaynağındaki 89 satır üç varyantı (`naive`, `pipe`, `par8`) birlikte içerir. Geliştirme süresi ayrıca
+kaydedilmemiştir.
 
 ## Model
 
@@ -215,6 +287,10 @@ python scripts/run_impl.py --all
 # HLS: 10.000 görüntülük C simülasyonu, 18 yapılandırma (sentez, co-simülasyon, implementasyon)
 python scripts/run_hls.py --csim
 python scripts/run_hls.py --all
+
+# Fmax tahmini (30 yapılandırma, 4 ns kısıtla yeniden implementasyon) ve enerji tablosu + grafikler
+python scripts/run_fmax.py
+python scripts/make_report.py
 ```
 
 Scriptler Vivado'yu `C:/Xilinx/Vivado/2023.2/bin`, Vitis HLS'i `C:/Xilinx/Vitis_HLS/2023.2/bin` altında
@@ -228,4 +304,8 @@ ve `scripts/create_hls_vivado_projects.tcl` kullanılır.
   değerleri Vivado implementasyonuyla elde edilmiştir.
 - Tasarımlar out-of-context olarak implemente edilmiştir (pin ataması yoktur). Karta yüklemek için
   görüntü girişi (ör. UART) ve sonuç çıkışı (ör. 7 segment gösterge) içeren bir üst modül gerekir.
-- Güç değerleri vektörsüz tahmindir.
+- Güç değerleri Vivado'nun vektörsüz tahminidir (rapordaki güven düzeyi "Medium"); gerçek çalışma
+  aktivitesiyle (SAIF) ya da kartta ölçülmemiştir. Bu boyuttaki tasarımlarda toplam gücün yaklaşık
+  dörtte üçü çipin statik gücüdür; bu yüzden karşılaştırmada dinamik güç ve enerji esas alınmıştır.
+- Fmax değerleri tahmindir: aynı tasarım 4 ns kısıtıyla bir kez implemente edilmiş, en yüksek frekans
+  kalan setup payından hesaplanmıştır. Saat darbesi genişliği gibi sınırlar hesaba katılmamıştır.

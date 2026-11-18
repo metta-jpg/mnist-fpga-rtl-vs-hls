@@ -3,13 +3,21 @@
 #           PROJ_DIR W_BITS P SH1 ACC1_BITS ACC2_BITS USE_DSP OUT_DIR
 # PROJ_DIR: rtl/mnist_wN (src/, constrs/, mem/ içerir). Genelde scripts/run_impl.py çağırır.
 
-lassign $argv PROJ_DIR W_BITS P SH1 ACC1_BITS ACC2_BITS USE_DSP OUT_DIR
+lassign $argv PROJ_DIR W_BITS P SH1 ACC1_BITS ACC2_BITS USE_DSP OUT_DIR PERIOD
 file mkdir $OUT_DIR
 
 foreach f {mnist_pkg weight_rom mnist_mlp mnist_mlp_top} {
     read_vhdl -vhdl2008 [file join $PROJ_DIR src $f.vhd]
 }
-read_xdc -mode out_of_context [file join $PROJ_DIR constrs mnist_ooc.xdc]
+if {$PERIOD eq ""} {
+    set XDC [file join $PROJ_DIR constrs mnist_ooc.xdc]
+} else {
+    set XDC [file join $OUT_DIR period_$PERIOD.xdc]
+    set fh [open $XDC w]
+    puts $fh "create_clock -period $PERIOD -name clk \[get_ports clk\]"
+    close $fh
+}
+read_xdc -mode out_of_context $XDC
 
 set DATA_DIR [file join $PROJ_DIR mem]
 synth_design -top mnist_mlp_top -part xc7a35tcpg236-1 -mode out_of_context \
@@ -21,6 +29,10 @@ opt_design
 place_design
 route_design
 
+if {$PERIOD ne ""} {
+    report_timing_summary -file [file join $OUT_DIR timing_fmax.rpt]
+    exit
+}
 report_utilization    -file [file join $OUT_DIR utilization.rpt]
 report_timing_summary -file [file join $OUT_DIR timing.rpt]
 report_power          -file [file join $OUT_DIR power.rpt]
